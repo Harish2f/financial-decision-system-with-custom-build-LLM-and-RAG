@@ -1,0 +1,6 @@
+Bankauszug
+Konto: 12345
+Zeitraum: Januar 2024
+Gesamteinzahlungen: 12.450 €
+Gesamtabhebungen: 9.200 €
+Endsaldo: 3.250 €
