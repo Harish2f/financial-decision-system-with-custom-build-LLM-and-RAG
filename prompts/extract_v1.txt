@@ -1,9 +1,0 @@
-Extrahiere die folgenden Felder aus dem Text unten und gib sie als gültiges JSON zurück:
-- account_id
-- period
-- total_deposits
-- total_withdrawals
-- ending_balance
-
-Text:
-{{DOCUMENT}}
