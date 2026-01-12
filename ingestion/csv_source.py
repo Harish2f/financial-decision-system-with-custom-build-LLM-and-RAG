@@ -1,7 +1,6 @@
 import pandas as pd
-from .data_source import DataSource
 
-class CSVSource(DataSource):
+class CSVSource:
     def __init__(self, path):
         self.path = path
 
