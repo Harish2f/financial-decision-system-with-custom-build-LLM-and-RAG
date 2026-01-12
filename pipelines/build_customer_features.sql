@@ -12,7 +12,17 @@ SELECT
         END
     ) AS avg_days_late,
     SUM(i.amount) AS total_billed,
-    SUM(COALESCE(p.amount_paid, 0)) AS total_paid
+    SUM(COALESCE(p.amount_paid, 0)) AS total_paid,
+
+    /* Risk label defined inside the feature table */
+    CASE
+        WHEN (SUM(CASE WHEN p.payment_date > i.due_date THEN 1 ELSE 0 END)::float 
+              / NULLIF(COUNT(i.invoice_id), 0)) > 0.30
+             OR (SUM(i.amount) - SUM(COALESCE(p.amount_paid, 0))) > 10000
+        THEN 1
+        ELSE 0
+    END AS risk_label
+
 FROM customers c
 LEFT JOIN invoices i ON c.customer_id = i.customer_id
 LEFT JOIN payments p ON i.invoice_id = p.invoice_id
