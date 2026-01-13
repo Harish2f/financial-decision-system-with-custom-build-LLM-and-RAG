@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import random
+import os
 
 np.random.seed(42)
 
@@ -66,6 +67,8 @@ for _, inv in invoices.iterrows():
         })
 
 payments = pd.DataFrame(payments)
+
+os.makedirs("data", exist_ok=True)
 
 customers.to_csv("data/customers.csv", index=False)
 contracts.to_csv("data/contracts.csv", index=False)
