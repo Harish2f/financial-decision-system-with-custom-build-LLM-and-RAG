@@ -7,12 +7,13 @@ SELECT
     SUM(CASE WHEN p.payment_date > i.due_date THEN 1 ELSE 0 END) AS late_invoices,
     AVG(
         CASE
-            WHEN p.payment_date IS NOT NULL THEN (p.payment_date - i.due_date)
+            WHEN p.payment_date IS NOT NULL
+            THEN CAST(p.payment_date AS DATE) - CAST(i.due_date AS DATE)
             ELSE 0
         END
     ) AS avg_days_late,
-    SUM(i.amount) AS total_billed,
-    SUM(COALESCE(p.amount_paid, 0)) AS total_paid,
+    SUM(CAST(i.amount AS double precision)) AS total_billed,
+    SUM(CAST(COALESCE(p.amount_paid, '0') AS double precision)) AS total_paid,
 
     /* Risk label defined inside the feature table */
     CASE

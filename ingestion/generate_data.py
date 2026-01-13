@@ -62,7 +62,7 @@ for _, inv in invoices.iterrows():
         payments.append({
             "payment_id": f"P{inv['invoice_id']}",
             "invoice_id": inv["invoice_id"],
-            "payment_date": pay_date,
+            "payment_date": pay_date.dt.strftime("%Y-%m-%d"),
             "amount_paid": inv["amount"]
         })
 
@@ -74,5 +74,10 @@ customers.to_csv("data/customers.csv", index=False)
 contracts.to_csv("data/contracts.csv", index=False)
 invoices.to_csv("data/invoices.csv", index=False)
 payments.to_csv("data/payments.csv", index=False)
+
+    # Explicitly format date columns for consistent loading
+    for df in [invoices, payments]:
+        for col in ["invoice_date", "due_date", "payment_date"]:
+            df[col] = pd.to_datetime(df[col]).dt.strftime("%Y-%m-%d")
 
 print("Data generated.")
