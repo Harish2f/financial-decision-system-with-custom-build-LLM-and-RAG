@@ -68,16 +68,17 @@ for _, inv in invoices.iterrows():
 
 payments = pd.DataFrame(payments)
 
+# Explicitly format date columns for consistent loading
+for df in [invoices, payments]:
+    for col in ["invoice_date", "due_date", "payment_date"]:
+        df[col] = pd.to_datetime(df[col]).dt.strftime("%Y-%m-%d")
+
+
 os.makedirs("data", exist_ok=True)
 
 customers.to_csv("data/customers.csv", index=False)
 contracts.to_csv("data/contracts.csv", index=False)
 invoices.to_csv("data/invoices.csv", index=False)
 payments.to_csv("data/payments.csv", index=False)
-
-    # Explicitly format date columns for consistent loading
-    for df in [invoices, payments]:
-        for col in ["invoice_date", "due_date", "payment_date"]:
-            df[col] = pd.to_datetime(df[col]).dt.strftime("%Y-%m-%d")
 
 print("Data generated.")
