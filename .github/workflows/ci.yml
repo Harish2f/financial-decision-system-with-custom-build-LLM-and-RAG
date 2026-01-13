@@ -1,0 +1,61 @@
+name: Finance AI CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-validate:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: finance_ai
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run ingestion
+        run: |
+          python -m ingestion.generate_data
+          python -m ingestion.load_customers
+          python -m ingestion.load_contracts
+          python -m ingestion.load_invoices
+          python -m ingestion.load_payments
+
+      - name: Build features and labels
+        run: |
+          python pipelines/run_sql.py
+
+      - name: Run baseline
+        run: |
+          python decision/run_baseline.py
+
+      - name: Train model
+        run: |
+          python models/extract_training_data.py
+          python -m models.train_model
+
+      - name: Run ML evaluation
+        run: |
+          python decision/run_ml.py
