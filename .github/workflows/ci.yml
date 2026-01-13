@@ -40,8 +40,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python3 -m pip install --upgrade pip
+          pip3 install -r requirements.txt
 
       - name: Create data directories
         run: |
@@ -49,22 +49,22 @@ jobs:
 
       - name: Run ingestion
         run: |
-          python -m ingestion.generate_data
-          python -m ingestion.load_customers
-          python -m ingestion.load_contracts
-          python -m ingestion.load_invoices
-          python -m ingestion.load_payments
+          python3 -m ingestion.generate_data
+          python3 -m ingestion.load_customers
+          python3 -m ingestion.load_contracts
+          python3 -m ingestion.load_invoices
+          python3 -m ingestion.load_payments
 
       - name: Build features + labels
         run: |
-          python pipelines/run_sql.py
+          python3 -m pipelines.run_sql
 
       - name: Run baseline
         run: |
-          python decision/run_baseline.py
+          python3 -m decision.run_baseline
 
       - name: Run training + ML
         run: |
-          python models/extract_training_data.py
-          python -m models.train_model
-          python decision/run_ml.py
+          python3 -m models.extract_training_data
+          python3 -m models.train_model
+          python3 decision.run_ml
