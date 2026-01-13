@@ -67,4 +67,4 @@ jobs:
         run: |
           python3 -m models.extract_training_data
           python3 -m models.train_model
-          python3 decision.run_ml
+          python3 -m decision.run_ml
