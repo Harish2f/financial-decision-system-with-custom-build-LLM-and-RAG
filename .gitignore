@@ -10,3 +10,4 @@ __pycache__/
 .mlflow/
 airflow/*.json
 *.json
+simple_auth_manager_passwords.json.generated
