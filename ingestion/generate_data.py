@@ -6,7 +6,8 @@ import os
 
 np.random.seed(42)
 
-# Customers
+# ------------ Customers ------------
+
 customers = []
 for i in range(500):
     customers.append({
@@ -19,7 +20,8 @@ for i in range(500):
 
 customers = pd.DataFrame(customers)
 
-# Contracts
+# ------------ Contracts ------------
+
 contracts = []
 for i in range(600):
     cust = customers.sample(1).iloc[0]
@@ -36,7 +38,8 @@ for i in range(600):
 
 contracts = pd.DataFrame(contracts)
 
-# Invoices
+# ------------ Invoices ------------
+
 invoices = []
 for i in range(5000):
     con = contracts.sample(1).iloc[0]
@@ -53,32 +56,46 @@ for i in range(5000):
 
 invoices = pd.DataFrame(invoices)
 
-# Payments
+# ------------ Payments ------------
+
 payments = []
 for _, inv in invoices.iterrows():
-    if random.random() < 0.85:  # 85% invoices paid
+    if random.random() < 0.85:  # 85% of invoices are paid
         delay = random.choice([0, 5, 10, 30, 60])
         pay_date = inv["due_date"] + timedelta(days=delay)
         payments.append({
             "payment_id": f"P{inv['invoice_id']}",
             "invoice_id": inv["invoice_id"],
-            "payment_date": pay_date.dt.strftime("%Y-%m-%d"),
+            "payment_date": pay_date,
             "amount_paid": inv["amount"]
         })
 
 payments = pd.DataFrame(payments)
 
-# Explicitly format date columns for consistent loading
-for df in [invoices, payments]:
-    for col in ["invoice_date", "due_date", "payment_date"]:
-        df[col] = pd.to_datetime(df[col]).dt.strftime("%Y-%m-%d")
+# ------------ TYPE AND FORMAT FIXES FOR CI AND POSTGRES ------------
 
+# Ensure invoice and payment date columns are true datetime types
+invoices["issue_date"] = pd.to_datetime(invoices["issue_date"])
+invoices["due_date"]   = pd.to_datetime(invoices["due_date"])
+payments["payment_date"] = pd.to_datetime(payments["payment_date"])
 
+# ------------ WRITE CSVs ------------
+
+# Make sure the 'data' directory exists
 os.makedirs("data", exist_ok=True)
 
+# Write to CSV with ISO date formatting for PostgreSQL ingestion
 customers.to_csv("data/customers.csv", index=False)
 contracts.to_csv("data/contracts.csv", index=False)
-invoices.to_csv("data/invoices.csv", index=False)
-payments.to_csv("data/payments.csv", index=False)
+invoices.to_csv(
+    "data/invoices.csv",
+    index=False,
+    date_format="%Y-%m-%d"
+)
+payments.to_csv(
+    "data/payments.csv",
+    index=False,
+    date_format="%Y-%m-%d"
+)
 
 print("Data generated.")

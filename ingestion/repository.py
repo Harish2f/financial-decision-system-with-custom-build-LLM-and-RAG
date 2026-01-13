@@ -1,5 +1,5 @@
 import sqlalchemy
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 class FinanceRepository:
     def __init__(self, config):
@@ -8,4 +8,7 @@ class FinanceRepository:
         )
 
     def write(self, table_name, df):
-        df.to_sql(table_name, self.engine, if_exists="append", index=False)
+        conn = self.engine.connect()
+        conn.execute(text(f"DROP TABLE IF EXISTS {table_name} CASCADE"))
+        df.to_sql(table_name, self.engine, if_exists="replace", index=False)
+        conn.close()
