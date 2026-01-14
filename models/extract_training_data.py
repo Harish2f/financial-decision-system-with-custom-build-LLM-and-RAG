@@ -1,10 +1,11 @@
 import pandas as pd
 from sqlalchemy import text
 from ingestion.repository import FinanceRepository
+from db import get_engine
 
 repo = FinanceRepository()
 
-engine = repo.engine
+engine =   get_engine()
 
 df = pd.read_sql(
     text("SELECT * FROM customer_finance_features"),

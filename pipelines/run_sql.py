@@ -1,13 +1,13 @@
 import sys
 import pathlib
-import sqlalchemy
 from sqlalchemy import text
+from db import get_engine
 
 # Ensure repository root is on sys.path so `import config` works
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from config import DATABASE_URL
 
-engine = sqlalchemy.create_engine(DATABASE_URL)
+
+engine =   get_engine()
 
 def run_sql_file(path):
     print("Running:", path)
