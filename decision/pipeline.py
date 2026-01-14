@@ -1,12 +1,11 @@
-from decision.feature_store import FeatureStore, get_engine
+from decision.feature_store import FeatureStore
 from decision.baseline import BaselineRiskModel
 from decision.evaluator import Evaluator
 from decision.ml_adapter import MLAdapter
 
 class DecisionPipeline:
     def __init__(self):
-        self.engine = get_engine()
-        self.store = FeatureStore(self.engine)
+        self.store = FeatureStore()
         self.evaluator = Evaluator()
 
     def run_baseline(self):

@@ -1,10 +1,9 @@
-from sqlalchemy import create_engine
-from config import DATABASE_URL
 import pandas as pd
+from ingestion.repository import FinanceRepository
 
 class FeatureStore:
     def __init__(self):
-        self.engine = create_engine(DATABASE_URL)
+        self.repo = FinanceRepository()
 
     def load_features(self):
-        return pd.read_sql("SELECT * FROM customer_finance_features", self.engine)
+        return pd.read_sql("SELECT * FROM customer_finance_features", self.repo.engine)
