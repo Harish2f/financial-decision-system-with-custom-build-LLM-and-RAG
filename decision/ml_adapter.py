@@ -1,9 +1,10 @@
-import joblib
+from models.model_registry import get_model
+from decision.feature_builder import build_ml_features
 
 class MLAdapter:
-    def __init__(self, path="models/risk_model.joblib"):
-        self.model = joblib.load(path)
+    def __init__(self):
+        self.model = get_model()
 
     def predict(self, df):
-        X = df.drop(columns=["customer_id", "risk_label", "baseline_risk"])
+        X = build_ml_features(df)
         return self.model.predict(X)

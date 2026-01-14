@@ -1,7 +1,7 @@
 from ingestion.csv_source import CSVSource
 from ingestion.pipeline import IngestionPipeline
 from ingestion.repository import FinanceRepository
-import config
+
 import pandas as pd
 
 # Load source CSV
@@ -22,7 +22,7 @@ class ParsedCSVSource(CSVSource):
 parsed_source = ParsedCSVSource("data/invoices.csv")
 
 # Repository
-repo = FinanceRepository(config)
+repo = FinanceRepository()
 
 # Pipeline
 pipeline = IngestionPipeline(parsed_source, repo, "invoices")

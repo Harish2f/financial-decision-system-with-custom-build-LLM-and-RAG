@@ -1,12 +1,17 @@
+import numpy as np
+
 class BaselineRiskModel:
     """
-    Baseline-Regel für Finanzrisiko.
-    Diese Logik wird von Finance akzeptiert und dient als Referenz
-    für alle ML-Modelle.
+    Finance-approved baseline.
+    This must be mathematically reproducible even if SQL changes.
     """
 
     def predict(self, df):
-        return (
-            (df["avg_days_late"] > 15)
-            | ((df["total_billed"] - df["total_paid"]) > 10000)
-        ).astype(int)
+        avg_days_late = df["avg_days_late"].fillna(0).astype(float)
+        total_billed = df["total_billed"].fillna(0).astype(float)
+        total_paid = df["total_paid"].fillna(0).astype(float)
+
+        unpaid = total_billed - total_paid
+
+        risk = (avg_days_late > 15) | (unpaid > 10000)
+        return risk.astype(np.int8)
