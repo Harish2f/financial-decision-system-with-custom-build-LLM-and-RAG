@@ -1,7 +1,11 @@
 import os
 
-DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = int(os.getenv("DB_PORT", "5432"))
-DB_NAME = os.getenv("DB_NAME", "finance_ai")
+def get_db_config():
+    return {
+        "host": os.getenv("DB_HOST"),
+        "port": os.getenv("DB_PORT", "5432"),
+        "name": os.getenv("DB_NAME"),
+        "user": os.getenv("DB_USER"),
+        "password": os.getenv("DB_PASSWORD"),
+        "sslmode": os.getenv("DB_SSLMODE", "require"),
+    }
