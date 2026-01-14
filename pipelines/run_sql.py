@@ -5,13 +5,9 @@ from sqlalchemy import text
 
 # Ensure repository root is on sys.path so `import config` works
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-import config
+from config import DATABASE_URL
 
-engine = sqlalchemy.create_engine(
-    f"postgresql+psycopg2://{config.DB_USER}:{config.DB_PASSWORD}"
-    f"@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}"
-    f"?sslmode={config.DB_SSLMODE}"
-)
+engine = sqlalchemy.create_engine(DATABASE_URL)
 
 def run_sql_file(path):
     print("Running:", path)
