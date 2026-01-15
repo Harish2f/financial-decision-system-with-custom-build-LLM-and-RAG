@@ -1,0 +1,26 @@
+executor: KubernetesExecutor
+
+airflow:
+  image:
+    repository: apache/airflow
+    tag: 2.8.1
+
+  config:
+    AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "True"
+
+dags:
+  persistence:
+    enabled: true
+    storageClassName: default
+    size: 1Gi
+
+postgresql:
+  enabled: true
+  image:
+    registry: financialairegistry.azurecr.io
+    repository: postgresql
+    tag: "15"
+
+redis:
+  enabled: false

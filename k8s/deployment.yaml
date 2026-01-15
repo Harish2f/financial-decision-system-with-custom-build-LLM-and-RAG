@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: financial-decision-system
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: financial-decision-system
+  template:
+    metadata:
+      labels:
+        app: financial-decision-system
+    spec:
+      containers:
+      - name: pipeline
+        image: financialairegistry.azurecr.io/financial-decision-system:1.0
+        env:
+        - name: DB_HOST
+          value: finance-ai-pg.postgres.database.azure.com
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: finance_ai
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: password
+        - name: DB_SSLMODE
+          value: require
