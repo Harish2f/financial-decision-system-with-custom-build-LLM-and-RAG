@@ -30,51 +30,43 @@ jobs:
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_NAME: finance_ai
+      DB_SSLMODE: disable
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install -r requirements.txt
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Create data directories
+      - name: Generate data
         run: |
-          mkdir -p data
+          python -m ingestion.generate_data
 
       - name: Run ingestion
         run: |
-          python3 -m ingestion.generate_data
-          python3 -m ingestion.load_customers
-          python3 -m ingestion.load_contracts
-          python3 -m ingestion.load_invoices
-          python3 -m ingestion.load_payments
+          python -m ingestion.load_customers
+          python -m ingestion.load_contracts
+          python -m ingestion.load_invoices
+          python -m ingestion.load_payments
 
-      - name: Build features + labels
+      - name: Build features & labels
         run: |
-          python3 -m pipelines.run_sql
+          python -m pipelines.run_sql
 
       - name: Run baseline
         run: |
-          python3 -m decision.run_baseline
+          python -m decision.run_baseline
 
-      - name: Run training + ML
+      - name: Train & evaluate ML
         run: |
-          python3 -m models.extract_training_data
-          python3 -m models.train_model
-          python3 -m decision.run_ml
-
-  notify:
-    needs: test-and-validate
-    runs-on: ubuntu-latest
-    steps:
-      - name: Emit success event
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          event-type: ci-passed
+          python -m models.extract_training_data
+          python -m models.train_model
+          python -m decision.run_ml
