@@ -1,15 +1,12 @@
-# Financial Decision System – Production-Grade Applied AI
+# Financial Decision System – Production Grade Applied AI
 
-This repository contains a fully production-grade AI system for detecting financial risk from customer payment behavior.  
-It is designed using Enterprise style applied AI, governance, and orchestration standards.
+ProductioncGrade Applied AI Platform (AKS + Airflow + CI/CD)
 
-The system decides whether to use **business rules or machine learning** based on measurable business impact, not hype.
+This repository contains a productioncgrade financial risk decision system built using enterprisecstyle Applied AI, governance, and cloud orchestration patterns.
 
-It implements the full lifecycle:
+The system is intentionally designed to choose between rule based logic and machine learning based on measurable business impact, not model hype.
 
-Data generation → Ingestion → Feature engineering → Model training → Decision inference → Orchestration (Airflow) → Cloud database (Azure PostgreSQL)
-
-The system is designed to resemble how modern financial ML platforms are built in real enterprises.
+It reflects how real financial ML platforms are built, deployed, and governed in production environments.
 
 ---
 
@@ -18,15 +15,25 @@ The system is designed to resemble how modern financial ML platforms are built i
 Finance teams must identify customers who are likely to:
 - Pay invoices late
 - Accumulate unpaid balances
-- Create financial risk
+- Create downstream financial risk
 
 Wrong decisions are expensive:
-- **False negatives** → Bad debt
+- **False negatives** → Bad debt, cash-flow risk
 - **False positives** → Blocking good customers and losing revenue
 
 Therefore, this system enforces:
-- An fully explainable **baseline**
+- An fully explainable **baseline** as the default.
 - ML only when it **clearly improves financial outcomes**
+
+---
+
+## Key Design Principles
+
+- Business first ML (ML must justify itself)
+- Explainability before accuracy
+- Automated governance
+- Reproducibility & auditability
+- Cloud native execution
 
 ---
 
@@ -35,33 +42,36 @@ Therefore, this system enforces:
 ```bash
 
 CSV / SAP-style data
-↓
+        ↓
 Ingestion (Python)
-↓
-Azure PostgreSQL (Operational Data Store)
-↓
-Feature Store (SQL)
-↓
-Baseline Rules + ML
-↓
-Decision Engine
-↓
+        ↓
+Azure PostgreSQL (data plane)
+        ↓
+SQL Feature Store
+        ↓
+Baseline Rules + ML Model
+        ↓
+Decision Evaluation
+        ↓
 Monitoring & Metrics
-↓
-Airflow (Daily Execution)
+        ↓
+Airflow (AKS)
+        ↓
+CI/CD (GitHub Actions)
+
 ```
 ---
 
 ## What the System Does
 
 1. Loads customers, contracts, invoices and payments into Azure PostgreSQL
-2. Builds customer-level finance features and risk labels in SQL 
+2. Builds customer level finance features and risk labels in SQL 
 3. Runs an explainable baseline rule  
-4. Trains and evaluates a machine-learning model  
-5. Approves ML only if it beats the baseline  
+4. Trains and evaluates a machine learning model  
+5. Approves ML only if it outperforms the baseline  
 6. Exposes decisions via the Decision Pipeline
 7. Monitors drift and performance  
-8. Runs automatically every day  on a schedule via Airflow  
+8. Runs automatically every day  on a schedule via Airflow  on Kubernetes
 
 ---
 
@@ -75,9 +85,9 @@ The ML model is only allowed into production if it:
 - Catches more risky customers
 - Without introducing unacceptable false positives
 
-The business decision is documented in:
+TThe business decision and approval rationale are documented in:
 
-docs/decision_log.md
+[Decision Log](docs/decision_log.md)
 
 ---
 
@@ -99,6 +109,25 @@ This guarantees:
 
 ---
 
+## Cloud Native Deployment
+
+Infrastructure
+- AKS (Azure Kubernetes Service) – execution layer
+- Azure PostgreSQL Flexible Server – data plane
+- Azure Container Registry (ACR) – image storage
+- Apache Airflow (Helm) – orchestration
+
+CI/CD
+- GitHub Actions
+- Multi-architecture Docker builds (linux/amd64)
+- Automatic:
+	•	Image build & push
+	•	Kubernetes secret management
+	•	Deployment rollout
+
+---
+
+
 ## Orchestration
 
 The full production pipeline runs in Airflow:
@@ -110,8 +139,10 @@ generate_data
 → ingest_invoices
 → ingest_payments
 → build_features
-→ train_model
+→ baseline_eval
+→ ml_eval
 → run_decisions
+→ monitor
 
 ```
 
@@ -119,7 +150,7 @@ This supports:
 - Daily execution
 - Backfills
 - Failure recovery
-- Auditability
+- End-to-end auditability
 
 ---
 
@@ -157,7 +188,7 @@ GitHub Actions validates:
 - Data generation
 - SQL feature engineering
 - Model training
-- Decision pipeline
+- Decision pipeline execution
 
 ## Compliance & Audit
  
@@ -166,15 +197,18 @@ GitHub Actions validates:
 	- Reproducible datasets
 	- Explainable baselines
 	- ML approval based on financial impact
-	- Drift monitoring
+	- Automated deployment logs
 	- Fully traceable Airflow execution
+	- Kubernetes-native secret handling
 
 ## Technology Stack
     - Python
-    - PostgreSQL (Azure)
+    - Azure PostgreSQL (Azure Flexible Server)
     - Pandas
 	- SQLAlchemy
 	- XGBoost
 	- Apache Airflow 3
-	- Git
-    - Azure ML
+	- Docker
+	- Azure Container Registry
+	- Kubernetes (AKS)
+	- GitHub Actions (CI/CD)

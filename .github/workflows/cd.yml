@@ -1,0 +1,58 @@
+name: Deploy Financial Decision System
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Azure login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Login to ACR
+      run: |
+        az acr login --name ${{ secrets.ACR_NAME }}
+
+    - name: Build and push image
+      run: |
+        docker buildx create --use
+        docker buildx build \
+          --platform linux/amd64 \
+          -t ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.IMAGE_NAME }}:${{ github.sha }} \
+          -t ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.IMAGE_NAME }}:latest \
+          --push .
+
+    - name: Set AKS context
+      run: |
+        az aks get-credentials \
+          --resource-group ${{ secrets.AKS_RG }} \
+          --name ${{ secrets.AKS_NAME }} \
+          --overwrite-existing
+
+    - name: Create / Update DB secrets
+      run: |
+        kubectl create secret generic db-secrets \
+          --from-literal=host=${{ secrets.DB_HOST }} \
+          --from-literal=port=${{ secrets.DB_PORT }} \
+          --from-literal=name=${{ secrets.DB_NAME }} \
+          --from-literal=user=${{ secrets.DB_USER }} \
+          --from-literal=password=${{ secrets.DB_PASSWORD }} \
+          --from-literal=sslmode=${{ secrets.DB_SSLMODE }} \
+          --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl set image deployment/financial-decision-system \
+          pipeline=${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.IMAGE_NAME }}:${{ github.sha }}
+    
+    - name: Wait for rollout
+      run: |
+        kubectl rollout status deployment/financial-decision-system
