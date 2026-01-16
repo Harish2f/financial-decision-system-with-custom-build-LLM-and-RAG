@@ -39,6 +39,11 @@ jobs:
             ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.IMAGE_NAME }}:${{ github.event.workflow_run.head_sha }}
             ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.IMAGE_NAME }}:latest
 
+      - name: Debug AKS secrets
+        run: |
+           echo "AKS_RG='${{ secrets.AKS_RG }}'"
+           echo "AKS_NAME='${{ secrets.AKS_NAME }}'"
+
       - name: Set AKS context
         run: |
           az aks get-credentials \
