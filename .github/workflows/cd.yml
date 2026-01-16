@@ -1,8 +1,8 @@
 name: Deploy Financial Decision System
 
 on:
-  push:
-    branches: [ "main" ]
+  repository_dispatch:
+    types: [ ci-passed ]
 
 jobs:
   deploy:
