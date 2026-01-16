@@ -33,7 +33,8 @@ jobs:
             --platform linux/amd64 \
             -t ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.IMAGE_NAME }}:${{ github.event.workflow_run.head_sha }} \
             -t ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.IMAGE_NAME }}:latest \
-            --push .
+            --push 
+            ./
 
       - name: Set AKS context
         run: |
