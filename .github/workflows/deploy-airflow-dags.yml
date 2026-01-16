@@ -1,0 +1,40 @@
+name: Deploy Airflow DAGs
+
+on:
+  push:
+    paths:
+      - "dags/**"       # Only trigger when files under /dags change
+    branches:
+      - main
+
+jobs:
+  deploy-dags:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ secrets.AKS_RG }} \
+            --name ${{ secrets.AKS_NAME }} \
+            --overwrite-existing
+
+      - name: Update Airflow DAG ConfigMap
+        run: |
+          kubectl create configmap airflow-dags-config \
+            --from-file=dags/ \
+            --namespace airflow \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Restart Airflow scheduler + webserver
+        run: |
+          kubectl rollout restart deployment airflow-scheduler -n airflow
+          kubectl rollout restart deployment airflow-api-server -n airflow

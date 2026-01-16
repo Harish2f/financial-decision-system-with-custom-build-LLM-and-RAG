@@ -3,7 +3,7 @@ executor: KubernetesExecutor
 airflow:
   image:
     repository: apache/airflow
-    tag: 2.8.1
+    tag: 3.0.2
 
   config:
     AIRFLOW__CORE__LOAD_EXAMPLES: "False"
@@ -11,9 +11,18 @@ airflow:
 
 dags:
   persistence:
+    enabled: false
+
+  gitSync:
     enabled: true
-    storageClassName: default
-    size: 1Gi
+    repo: https://github.com/Harish2f/financial-decision-system.git
+    branch: main
+    rev: HEAD
+    subPath: dags
+    depth: 1
+    wait: 30
+    period: 30s
+    ref: HEAD
 
 postgresql:
   enabled: true
