@@ -23,13 +23,14 @@ jobs:
 
     - name: Build and push image
       run: |
-       docker buildx create --use
-       docker buildx build \
-       --platform linux/amd64 \
-       -t ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.IMAGE_NAME }}:${{ github.sha }} \
-       -t ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.IMAGE_NAME }}:latest \
-       --push .
-
+        docker buildx create --use
+        docker buildx build \
+        --platform linux/amd64 \
+        -t ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.IMAGE_NAME }}:${{ github.sha }} \
+        -t ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.IMAGE_NAME }}:latest \
+        --push \
+        .
+    
     - name: Set AKS context
       run: |
         az aks get-credentials \
