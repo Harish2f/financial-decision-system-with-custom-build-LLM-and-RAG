@@ -19,34 +19,52 @@ def run():
     SELECT
         c.customer_id,
 
-        /* ---------- invoice-based features ---------- */
+        /* ---------- invoice counts ---------- */
         COUNT(i.invoice_id) AS total_invoices,
 
+        /* ---------- late invoices ---------- */
         COALESCE(
-            SUM(CASE WHEN i.days_late > 0 THEN 1 ELSE 0 END),
+            SUM(
+                CASE
+                    WHEN p.payment_date IS NOT NULL
+                     AND p.payment_date > i.due_date
+                    THEN 1
+                    ELSE 0
+                END
+            ),
             0
         ) AS late_invoices,
 
+        /* ---------- avg days late ---------- */
         COALESCE(
-            AVG(i.days_late),
+            AVG(
+                CASE
+                    WHEN p.payment_date IS NOT NULL
+                     AND p.payment_date > i.due_date
+                    THEN (p.payment_date - i.due_date)
+                    ELSE 0
+                END
+            ),
             0
         ) AS avg_days_late,
 
-        COALESCE(
-            SUM(i.amount),
-            0
-        ) AS total_billed,
+        /* ---------- money ---------- */
+        COALESCE(SUM(i.amount), 0) AS total_billed,
+        COALESCE(SUM(p.amount), 0) AS total_paid,
 
-        /* ---------- payment-based features ---------- */
-        COALESCE(
-            SUM(p.amount),
-            0
-        ) AS total_paid,
-
-        /* ---------- governance label (baseline-aligned) ---------- */
+        /* ---------- governance label ---------- */
         CASE
             WHEN
-                COALESCE(AVG(i.days_late), 0) > 15
+                COALESCE(
+                    AVG(
+                        CASE
+                            WHEN p.payment_date > i.due_date
+                            THEN (p.payment_date - i.due_date)
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) > 15
                 OR
                 (COALESCE(SUM(i.amount), 0) - COALESCE(SUM(p.amount), 0)) > 10000
             THEN 1
@@ -65,7 +83,7 @@ def run():
     with engine.begin() as conn:
         conn.execute(text(sql))
 
-    print("customer_finance_features rebuilt successfully (schema-correct, NULL-safe).")
+    print("customer_finance_features built successfully.")
 
 
 if __name__ == "__main__":
