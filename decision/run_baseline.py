@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 
 
 # -----------------------------
@@ -26,26 +26,39 @@ def get_engine():
     user = os.environ["DB_USER"]
     password = os.environ["DB_PASSWORD"]
     db = os.environ["DB_NAME"]
+    sslmode = os.environ.get("DB_SSLMODE", "disable")
 
-    db_url = f"postgresql://{user}:{password}@{host}:{port}/{db}"
+    db_url = (
+        f"postgresql://{user}:{password}@{host}:{port}/{db}"
+        f"?sslmode={sslmode}"
+    )
     return create_engine(db_url)
 
 
-from sqlalchemy import inspect
-
+# -----------------------------
+# Preconditions / contracts
+# -----------------------------
 def assert_customer_features_exist(engine):
     inspector = inspect(engine)
-    if "customer_features" not in inspector.get_table_names():
+    tables = inspector.get_table_names()
+
+    if "customer_features" not in tables:
         raise RuntimeError(
-            "customer_features table not found. "
-            "Ensure pipelines.run_sql executed successfully."
+            "Required table 'customer_features' not found. "
+            "This indicates a pipeline ordering failure.\n"
+            "Expected pipelines.run_sql to execute before baseline.\n"
+            f"Available tables: {tables}"
         )
+
 
 # -----------------------------
 # Pipeline entrypoint
 # -----------------------------
 def run():
     engine = get_engine()
+
+    # Enforce pipeline contract
+    assert_customer_features_exist(engine)
 
     query = """
         SELECT
@@ -54,8 +67,6 @@ def run():
             unpaid_balance
         FROM customer_features
     """
-
-    
 
     df = pd.read_sql(query, engine)
 
@@ -67,10 +78,10 @@ def run():
         axis=1
     )
 
-    risky = df["baseline_risk"].sum()
+    risky = int(df["baseline_risk"].sum())
     total = len(df)
 
-    print(f"Baseline flagged {risky}/{total} customers as risky")
+    print(f"[BASELINE] Flagged {risky}/{total} customers as risky")
 
 
 if __name__ == "__main__":

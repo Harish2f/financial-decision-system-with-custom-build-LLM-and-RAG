@@ -61,6 +61,18 @@ jobs:
         run: |
           python -m pipelines.run_sql
 
+      - name: Assert customer_features exists
+        run: |
+          python - <<EOF
+          from sqlalchemy import create_engine, inspect
+          from config import DATABASE_URL
+
+          engine = create_engine(DATABASE_URL)
+          inspector = inspect(engine)
+          print("TABLES:", inspector.get_table_names())
+          assert "customer_features" in inspector.get_table_names()
+          EOF
+
       - name: Verify feature tables exist
         run: |
          python - <<EOF
