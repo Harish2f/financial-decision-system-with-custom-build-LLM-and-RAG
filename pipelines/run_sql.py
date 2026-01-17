@@ -28,7 +28,7 @@ def run():
                 CASE
                     WHEN p.payment_date IS NOT NULL
                      AND i.due_date IS NOT NULL
-                     AND CAST(p.payment_date AS DATE) > CAST(i.due_date AS DATE)
+                     AND p.payment_date::date > i.due_date::date
                     THEN 1
                     ELSE 0
                 END
@@ -42,9 +42,8 @@ def run():
                 CASE
                     WHEN p.payment_date IS NOT NULL
                      AND i.due_date IS NOT NULL
-                     AND CAST(p.payment_date AS DATE) > CAST(i.due_date AS DATE)
-                    THEN
-                        CAST(p.payment_date AS DATE) - CAST(i.due_date AS DATE)
+                     AND p.payment_date::date > i.due_date::date
+                    THEN (p.payment_date::date - i.due_date::date)
                     ELSE 0
                 END
             ),
@@ -53,7 +52,7 @@ def run():
 
         /* ---------- money ---------- */
         COALESCE(SUM(i.amount), 0) AS total_billed,
-        COALESCE(SUM(p.amount), 0) AS total_paid,
+        COALESCE(SUM(p.paid_amount), 0) AS total_paid,
 
         /* ---------- governance label ---------- */
         CASE
@@ -63,16 +62,15 @@ def run():
                         CASE
                             WHEN p.payment_date IS NOT NULL
                              AND i.due_date IS NOT NULL
-                             AND CAST(p.payment_date AS DATE) > CAST(i.due_date AS DATE)
-                            THEN
-                                CAST(p.payment_date AS DATE) - CAST(i.due_date AS DATE)
+                             AND p.payment_date::date > i.due_date::date
+                            THEN (p.payment_date::date - i.due_date::date)
                             ELSE 0
                         END
                     ),
                     0
                 ) > 15
                 OR
-                (COALESCE(SUM(i.amount), 0) - COALESCE(SUM(p.amount), 0)) > 10000
+                (COALESCE(SUM(i.amount), 0) - COALESCE(SUM(p.paid_amount), 0)) > 10000
             THEN 1
             ELSE 0
         END AS risk_label
