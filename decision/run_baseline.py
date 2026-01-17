@@ -31,6 +31,16 @@ def get_engine():
     return create_engine(db_url)
 
 
+from sqlalchemy import inspect
+
+def assert_customer_features_exist(engine):
+    inspector = inspect(engine)
+    if "customer_features" not in inspector.get_table_names():
+        raise RuntimeError(
+            "customer_features table not found. "
+            "Ensure pipelines.run_sql executed successfully."
+        )
+
 # -----------------------------
 # Pipeline entrypoint
 # -----------------------------
@@ -44,6 +54,8 @@ def run():
             unpaid_balance
         FROM customer_features
     """
+
+    
 
     df = pd.read_sql(query, engine)
 
