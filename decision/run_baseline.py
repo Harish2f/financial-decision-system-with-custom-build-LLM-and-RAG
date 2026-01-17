@@ -42,11 +42,10 @@ def assert_customer_features_exist(engine):
     inspector = inspect(engine)
     tables = inspector.get_table_names()
 
-    if "customer_features" not in tables:
+    if "customer_finance_features" not in tables:
         raise RuntimeError(
-            "Required table 'customer_features' not found. "
-            "This indicates a pipeline ordering failure.\n"
-            "Expected pipelines.run_sql to execute before baseline.\n"
+            "Required table 'customer_finance_features' not found. "
+            "Ensure pipelines.run_sql executed successfully.\n"
             f"Available tables: {tables}"
         )
 
@@ -65,7 +64,7 @@ def run():
             customer_id,
             avg_days_late,
             unpaid_balance
-        FROM customer_features
+        FROM customer_finance_features
     """
 
     df = pd.read_sql(query, engine)
