@@ -20,7 +20,7 @@ def run():
         c.customer_id,
 
         /* ---------- invoice-based features ---------- */
-        COALESCE(COUNT(i.invoice_id), 0) AS total_invoices,
+        COUNT(i.invoice_id) AS total_invoices,
 
         COALESCE(
             SUM(CASE WHEN i.days_late > 0 THEN 1 ELSE 0 END),
@@ -28,22 +28,25 @@ def run():
         ) AS late_invoices,
 
         COALESCE(
-            AVG(CASE WHEN i.days_late IS NOT NULL THEN i.days_late END),
+            AVG(i.days_late),
             0
         ) AS avg_days_late,
 
-        COALESCE(SUM(i.amount), 0) AS total_billed,
+        COALESCE(
+            SUM(i.amount),
+            0
+        ) AS total_billed,
 
         /* ---------- payment-based features ---------- */
-        COALESCE(SUM(p.amount), 0) AS total_paid,
+        COALESCE(
+            SUM(p.amount),
+            0
+        ) AS total_paid,
 
         /* ---------- governance label (baseline-aligned) ---------- */
         CASE
             WHEN
-                COALESCE(
-                    AVG(CASE WHEN i.days_late IS NOT NULL THEN i.days_late END),
-                    0
-                ) > 15
+                COALESCE(AVG(i.days_late), 0) > 15
                 OR
                 (COALESCE(SUM(i.amount), 0) - COALESCE(SUM(p.amount), 0)) > 10000
             THEN 1
@@ -54,7 +57,7 @@ def run():
     LEFT JOIN invoices i
         ON c.customer_id = i.customer_id
     LEFT JOIN payments p
-        ON c.customer_id = p.customer_id
+        ON i.invoice_id = p.invoice_id
 
     GROUP BY c.customer_id;
     """
@@ -62,7 +65,7 @@ def run():
     with engine.begin() as conn:
         conn.execute(text(sql))
 
-    print("customer_finance_features rebuilt successfully (NULL-safe).")
+    print("customer_finance_features rebuilt successfully (schema-correct, NULL-safe).")
 
 
 if __name__ == "__main__":
