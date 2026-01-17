@@ -70,3 +70,7 @@ jobs:
           python -m models.extract_training_data
           python -m models.train_model
           python -m decision.run_ml
+
+      - name: Run unit & governance tests
+        run: |
+          pytest tests/ --maxfail=1 --disable-warnings

@@ -7,3 +7,6 @@ xgboost==1.7.5
 mlflow
 apache-airflow==3.1.5
 python-dotenv
+pytest
+great_expectations
+pytest-mock
