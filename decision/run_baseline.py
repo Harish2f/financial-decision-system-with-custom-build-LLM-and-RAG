@@ -2,43 +2,23 @@ import os
 import pandas as pd
 from sqlalchemy import create_engine, inspect
 
-
-# -----------------------------
-# Baseline business rule
-# -----------------------------
-def is_risky_baseline(avg_days_late: float, unpaid_balance: float) -> bool:
-    """
-    Business-approved baseline rule.
-
-    Risky if:
-    - avg_days_late > 15 days OR
-    - unpaid_balance > 10,000 EUR
-    """
-    return avg_days_late > 15 or unpaid_balance > 10_000
+from decision.baseline import BaselineRiskModel
 
 
 # -----------------------------
 # Database connection
 # -----------------------------
 def get_engine():
-    host = os.environ["DB_HOST"]
-    port = os.environ["DB_PORT"]
-    user = os.environ["DB_USER"]
-    password = os.environ["DB_PASSWORD"]
-    db = os.environ["DB_NAME"]
-    sslmode = os.environ.get("DB_SSLMODE", "disable")
-
-    db_url = (
-        f"postgresql://{user}:{password}@{host}:{port}/{db}"
-        f"?sslmode={sslmode}"
+    return create_engine(
+        f"postgresql://{os.environ['DB_USER']}:{os.environ['DB_PASSWORD']}"
+        f"@{os.environ['DB_HOST']}:{os.environ['DB_PORT']}/{os.environ['DB_NAME']}"
     )
-    return create_engine(db_url)
 
 
 # -----------------------------
-# Preconditions / contracts
+# Safety check (governance)
 # -----------------------------
-def assert_customer_features_exist(engine):
+def assert_feature_table_exists(engine):
     inspector = inspect(engine)
     tables = inspector.get_table_names()
 
@@ -55,27 +35,21 @@ def assert_customer_features_exist(engine):
 # -----------------------------
 def run():
     engine = get_engine()
-
-    # Enforce pipeline contract
-    assert_customer_features_exist(engine)
+    assert_feature_table_exists(engine)
 
     query = """
         SELECT
             customer_id,
             avg_days_late,
-            unpaid_balance
+            total_billed,
+            total_paid
         FROM customer_finance_features
     """
 
     df = pd.read_sql(query, engine)
 
-    df["baseline_risk"] = df.apply(
-        lambda r: is_risky_baseline(
-            r["avg_days_late"],
-            r["unpaid_balance"]
-        ),
-        axis=1
-    )
+    model = BaselineRiskModel()
+    df["baseline_risk"] = model.predict(df)
 
     risky = int(df["baseline_risk"].sum())
     total = len(df)
