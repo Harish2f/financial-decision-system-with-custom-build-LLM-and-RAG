@@ -62,6 +62,8 @@ CI/CD (GitHub Actions)
 ```
 ---
 
+
+
 ## What the System Does
 
 1. Loads customers, contracts, invoices and payments into Azure PostgreSQL
@@ -73,7 +75,7 @@ CI/CD (GitHub Actions)
 7. Monitors drift and performance  
 8. Runs automatically every day  on a schedule via Airflow  on Kubernetes
 
----
+--- 
 
 ## Baseline vs ML Governance
 
@@ -130,7 +132,14 @@ CI/CD
 
 ## Orchestration
 
-The full production pipeline runs in Airflow:
+This system uses Apache Airflow 3 deployed on Azure Kubernetes Service (AKS) with the KubernetesExecutor.
+
+Key points:
+- Airflow deployed via Helm chart (apache airflow/airflow 1.18.0)
+- Git synced DAGs - no need to rebuild images for DAG changes
+- DAGs live in GitHub and are delivered via git-sync
+- Scheduler, triggerer, statsd, and dag processor run continuously
+- Task pods are ephemeral and only launched when DAGs run
 
 ```bash
 generate_data
@@ -144,6 +153,15 @@ generate_data
 → run_decisions
 → monitor
 
+Airflow components in the cluster include:
+
+airflow-api-server
+airflow-scheduler
+airflow-triggerer
+airflow-dag-processor
+airflow-statsd
+airflow-postgresql
+
 ```
 
 This supports:
@@ -153,6 +171,18 @@ This supports:
 - End-to-end auditability
 
 ---
+
+## Production Grade DAG Hardening
+
+hardened for reliability:
+- Retries on transient errors
+- Execution timeouts to prevent runaway tasks
+- Resource requests and limits per task (KubernetesExecutor)
+- catchup disabled to avoid unintended backfills
+- max_active_runs=1 to ensure controlled execution
+
+---
+
 
 ## Monitoring
 
@@ -169,6 +199,12 @@ This prevents:
 ---
 
 ## How to Run Locally
+
+Requirements
+- Python 3.11+
+- .venv or virtual environment
+- Azure CLI authenticated
+- kubectl configured for your AKS cluster
 
 Example workflow:
 
@@ -187,7 +223,7 @@ airflow scheduler
 GitHub Actions validates:
 - Data generation
 - SQL feature engineering
-- Model training
+- Model training & Evaluation
 - Decision pipeline execution
 
 ## Compliance & Audit

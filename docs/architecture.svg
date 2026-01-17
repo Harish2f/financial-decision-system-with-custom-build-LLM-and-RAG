@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1200" height="900" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .layer { fill: #fafafa; stroke: #222; stroke-width: 2px; }
+    .component { fill: #ffffff; stroke: #444; stroke-width: 1.5px; }
+    .text { font-family: Arial, sans-serif; font-size: 14px; fill: #111; }
+    .title { font-size: 18px; font-weight: bold; }
+    .arrow { stroke: #444; stroke-width: 1.3px; fill: none; marker-end: url(#arrowhead); }
+  </style>
+
+  <!-- Arrowhead definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7"
+            refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#444"/>
+    </marker>
+  </defs>
+
+  <!-- Layers -->
+  <rect x="20" y="20" width="1160" height="260" class="layer"/>
+  <text x="40" y="50" class="text title">Infrastructure</text>
+
+  <rect x="20" y="300" width="1160" height="260" class="layer"/>
+  <text x="40" y="330" class="text title">Orchestration & Control Plane</text>
+
+  <rect x="20" y="580" width="1160" height="280" class="layer"/>
+  <text x="40" y="610" class="text title">Data & Workflow Plane</text>
+
+  <!-- Infrastructure Components -->
+  <rect x="40" y="80" width="300" height="120" class="component"/>
+  <text x="60" y="110" class="text">GitHub Repo</text>
+  <text x="60" y="130" class="text small">(DAGs + Code + CI/CD)</text>
+
+  <rect x="380" y="80" width="300" height="120" class="component"/>
+  <text x="400" y="110" class="text">Azure Container Registry (ACR)</text>
+
+  <rect x="800" y="80" width="300" height="120" class="component"/>
+  <text x="820" y="110" class="text">Azure Kubernetes Service (AKS)</text>
+
+  <rect x="800" y="200" width="300" height="100" class="component"/>
+  <text x="820" y="230" class="text">Azure PostgreSQL</text>
+
+  <!-- Orchestration & Control Plane Components -->
+  <rect x="40" y="360" width="300" height="120" class="component"/>
+  <text x="60" y="390" class="text">GitHub Actions (CI/CD)</text>
+  <text x="60" y="410" class="text small">CI: tests + validation</text>
+  <text x="60" y="430" class="text small">CD: build & deploy</text>
+
+  <rect x="380" y="360} width="300" height="120" class="component"/>
+  <text x="400" y="390" class="text">Airflow Control Plane</text>
+  <text x="400" y="410" class="text small">Scheduler + Triggerer + API Server</text>
+
+  <rect x="740" y="360" width="300" height="120" class="component"/>
+  <text x="760" y="390" class="text">ACR → AKS Deployment</text>
+  <text x="760" y="410" class="text small">Image promotion & rollout</text>
+
+  <!-- Data & Workflow Plane -->
+  <rect x="40" y="640" width="300" height="120" class="component"/>
+  <text x="60" y="670" class="text">Airflow DAG Processor</text>
+  <text x="60" y="690" class="text small">(git-sync sidecar)</text>
+
+  <rect x="380" y="640" width="300" height="120" class="component"/>
+  <text x="400" y="670" class="text">KubernetesExecutor Task Pods</text>
+  <text x="400" y="690" class="text small">Ingestion | SQL | Training | Decision</text>
+
+  <rect x="740" y="640" width="300" height="120" class="component"/>
+  <text x="760" y="670" class="text">Operational PostgreSQL</text>
+  <text x="760" y="690" class="text small">Feature store / metadata</text>
+
+  <!-- Arrows -->
+  <line x1="340" y1="140" x2="380" y2="140" class="arrow"/>
+  <line x1="680" y1="140" x2="800" y2="140" class="arrow"/>
+  <line x1="490" y1="420" x2="740" y2="420" class="arrow"/>
+  <line x1="400" y1="490" x2="400" y2="580" class="arrow"/>
+  <line x1="600" y1="490" x2="600" y2="580" class="arrow"/>
+  <line x1="400" y1="700" x2="400" y2="780" class="arrow"/>
+  <line x1="900" y1="780" x2="900" y2="700" class="arrow"/>
+
+</svg>
