@@ -27,7 +27,8 @@ def run():
             SUM(
                 CASE
                     WHEN p.payment_date IS NOT NULL
-                     AND p.payment_date > i.due_date
+                     AND i.due_date IS NOT NULL
+                     AND CAST(p.payment_date AS DATE) > CAST(i.due_date AS DATE)
                     THEN 1
                     ELSE 0
                 END
@@ -40,8 +41,13 @@ def run():
             AVG(
                 CASE
                     WHEN p.payment_date IS NOT NULL
-                     AND p.payment_date > i.due_date
-                    THEN (p.payment_date - i.due_date)
+                     AND i.due_date IS NOT NULL
+                     AND CAST(p.payment_date AS DATE) > CAST(i.due_date AS DATE)
+                    THEN
+                        DATE_PART(
+                            'day',
+                            CAST(p.payment_date AS DATE) - CAST(i.due_date AS DATE)
+                        )
                     ELSE 0
                 END
             ),
@@ -58,8 +64,14 @@ def run():
                 COALESCE(
                     AVG(
                         CASE
-                            WHEN p.payment_date > i.due_date
-                            THEN (p.payment_date - i.due_date)
+                            WHEN p.payment_date IS NOT NULL
+                             AND i.due_date IS NOT NULL
+                             AND CAST(p.payment_date AS DATE) > CAST(i.due_date AS DATE)
+                            THEN
+                                DATE_PART(
+                                    'day',
+                                    CAST(p.payment_date AS DATE) - CAST(i.due_date AS DATE)
+                                )
                             ELSE 0
                         END
                     ),
