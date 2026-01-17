@@ -57,6 +57,10 @@ jobs:
           python -m ingestion.load_invoices
           python -m ingestion.load_payments
 
+      - name: Inspect database schema (debug)
+        run: |
+          python -m scripts.inspect_schema
+
       - name: Build features & labels
         run: |
           python -m pipelines.run_sql

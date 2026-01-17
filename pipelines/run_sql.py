@@ -44,10 +44,7 @@ def run():
                      AND i.due_date IS NOT NULL
                      AND CAST(p.payment_date AS DATE) > CAST(i.due_date AS DATE)
                     THEN
-                        DATE_PART(
-                            'day',
-                            CAST(p.payment_date AS DATE) - CAST(i.due_date AS DATE)
-                        )
+                        CAST(p.payment_date AS DATE) - CAST(i.due_date AS DATE)
                     ELSE 0
                 END
             ),
@@ -68,10 +65,7 @@ def run():
                              AND i.due_date IS NOT NULL
                              AND CAST(p.payment_date AS DATE) > CAST(i.due_date AS DATE)
                             THEN
-                                DATE_PART(
-                                    'day',
-                                    CAST(p.payment_date AS DATE) - CAST(i.due_date AS DATE)
-                                )
+                                CAST(p.payment_date AS DATE) - CAST(i.due_date AS DATE)
                             ELSE 0
                         END
                     ),
