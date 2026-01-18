@@ -1,18 +1,15 @@
-import pandas as pd
 from xgboost import XGBClassifier
 
 class RiskModel:
-    """
-    ML-Modell für Finanzrisiko.
-    Dieses Modell darf nur verwendet werden, wenn es die Baseline schlägt.
-    """
-
     def __init__(self):
         self.model = XGBClassifier(
-            n_estimators=100,
-            max_depth=4,
-            learning_rate=0.1,
-            eval_metric="logloss"
+            n_estimators=200,
+            max_depth=5,
+            learning_rate=0.05,
+            subsample=0.8,
+            colsample_bytree=0.8,
+            eval_metric="logloss",
+            random_state=42
         )
 
     def train(self, X, y):
