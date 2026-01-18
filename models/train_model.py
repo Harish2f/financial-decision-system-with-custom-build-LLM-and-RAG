@@ -28,6 +28,6 @@ model.train(X_train, y_train)
 
 os.makedirs("models", exist_ok=True)
 
-joblib.dump(model, "models/risk_model.joblib")
+joblib.dump(model, "models/risk_model.pkl")
 
 print("Model trained and saved")
