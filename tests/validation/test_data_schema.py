@@ -1,7 +1,7 @@
 import pandas as pd
 
 EXPECTED_SCHEMA = {
-    "customer_id": "int64",
+    "customer_id": "object",
     "total_invoices": "int64",
     "late_invoices": "int64",
     "avg_days_late": "float64",
