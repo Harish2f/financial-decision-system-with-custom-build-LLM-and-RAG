@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from models.risk_model import RiskModel
 import joblib
+import os
 
 df = pd.read_csv("models/training_data.csv")
 
@@ -24,6 +25,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 model = RiskModel()
 model.train(X_train, y_train)
+
+os.makedirs("models", exist_ok=True)
 
 joblib.dump(model, "models/risk_model.joblib")
 
