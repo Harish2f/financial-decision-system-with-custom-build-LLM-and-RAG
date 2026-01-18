@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 class DriftMonitor:
     def __init__(self, reference_df, threshold=0.2):
@@ -31,7 +32,9 @@ class DriftMonitor:
             )
             drift_report[col] = psi_value
 
-            if psi_value > self.threshold:
-                print(f"[DRIFT WARNING] {col} PSI={psi_value:.3f}")
+            warnings.warn(
+    f"[DRIFT WARNING] {col} PSI={psi_value:.3f}",
+    UserWarning
+)
 
         return drift_report
