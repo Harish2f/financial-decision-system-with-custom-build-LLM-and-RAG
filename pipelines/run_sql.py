@@ -64,7 +64,7 @@ def run() -> None:
 
         /* ---------- money ---------- */
         COALESCE(SUM(i.amount), 0)                     AS total_billed,
-        COALESCE(SUM(p.amount), 0)                     AS total_paid,
+        COALESCE(SUM(p.paid_amount), 0)                     AS total_paid,
 
         /* ---------- risk / governance label ---------- */
         CASE
@@ -82,7 +82,7 @@ def run() -> None:
                     0
                 ) > 15
                 OR
-                (COALESCE(SUM(i.amount), 0) - COALESCE(SUM(p.amount), 0)) > 10000
+                (COALESCE(SUM(i.amount), 0) - COALESCE(SUM(p.paid_amount), 0)) > 10000
             THEN 1
             ELSE 0
         END AS risk_label
