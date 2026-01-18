@@ -1,30 +1,17 @@
-# pipelines/run_sql.py
 import os
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine  # ← import the correct return type
 
 
-def get_engine() -> Engine:
-    """
-    Build a SQLAlchemy engine from the DB connection variables that are injected
-    into the CI environment.  Using ``engine.begin()`` later guarantees a
-    transaction that is automatically rolled back on error.
-    """
+def get_engine():
     return create_engine(
         f"postgresql://{os.environ['DB_USER']}:{os.environ['DB_PASSWORD']}"
         f"@{os.environ['DB_HOST']}:{os.environ['DB_PORT']}/{os.environ['DB_NAME']}"
     )
 
 
-def run() -> None:
-    """Create the denormalised feature table used by downstream models."""
+def run():
     engine = get_engine()
 
-    # NOTE:
-    # The payments table stores the amount actually paid in the column ``amount``.
-    # An earlier version of this script mistakenly used ``paid_amount``, which
-    # does **not** exist and caused a ``psycopg2.errors.UndefinedColumn`` error.
-    # All references have been corrected to ``p.amount``.
     sql = """
     DROP TABLE IF EXISTS customer_finance_features;
 
@@ -33,7 +20,7 @@ def run() -> None:
         c.customer_id,
 
         /* ---------- invoice counts ---------- */
-        COUNT(i.invoice_id) AS total_invoices,
+        COUNT(i.invoice_id)                              AS total_invoices,
 
         /* ---------- late invoices ---------- */
         COALESCE(
@@ -47,9 +34,9 @@ def run() -> None:
                 END
             ),
             0
-        ) AS late_invoices,
+        )                                                AS late_invoices,
 
-        /* ---------- avg days late ---------- */
+        /* ---------- average days late ---------- */
         COALESCE(
             AVG(
                 CASE
@@ -61,13 +48,13 @@ def run() -> None:
                 END
             ),
             0
-        ) AS avg_days_late,
+        )                                                AS avg_days_late,
 
         /* ---------- money ---------- */
-        COALESCE(SUM(i.amount), 0)                     AS total_billed,
-        COALESCE(SUM(p.amount), 0)                     AS total_paid,
+        COALESCE(SUM(i.amount), 0)                       AS total_billed,
+        COALESCE(SUM(p.amount_paid), 0)                  AS total_paid,
 
-        /* ---------- risk / governance label ---------- */
+        /* ---------- governance label (baseline aligned) ---------- */
         CASE
             WHEN
                 COALESCE(
@@ -83,10 +70,10 @@ def run() -> None:
                     0
                 ) > 15
                 OR
-                (COALESCE(SUM(i.amount), 0) - COALESCE(SUM(p.amount), 0)) > 10000
+                (COALESCE(SUM(i.amount), 0) - COALESCE(SUM(p.amount_paid), 0)) > 10000
             THEN 1
             ELSE 0
-        END AS risk_label
+        END                                              AS risk_label
 
     FROM customers c
     LEFT JOIN invoices i
@@ -97,7 +84,6 @@ def run() -> None:
     GROUP BY c.customer_id;
     """
 
-    # Execute the whole batch in a single transaction
     with engine.begin() as conn:
         conn.execute(text(sql))
 
