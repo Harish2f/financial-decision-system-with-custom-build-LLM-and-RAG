@@ -1,12 +1,13 @@
 # pipelines/run_sql.py
 import os
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine import Engine  # ← import the correct return type
 
 
-def get_engine() -> str:
+def get_engine() -> Engine:
     """
     Build a SQLAlchemy engine from the DB connection variables that are injected
-    into the CI environment.  Using `engine.begin()` later guarantees a
+    into the CI environment.  Using ``engine.begin()`` later guarantees a
     transaction that is automatically rolled back on error.
     """
     return create_engine(
@@ -20,10 +21,10 @@ def run() -> None:
     engine = get_engine()
 
     # NOTE:
-    # The payments table stores the amount that was actually paid in the column
-    # `amount`.  An earlier version of the script mistakenly used `paid_amount`,
-    # which does not exist and caused a `psycopg2.errors.UndefinedColumn` error.
-    # All references have been updated to `p.amount`.
+    # The payments table stores the amount actually paid in the column ``amount``.
+    # An earlier version of this script mistakenly used ``paid_amount``, which
+    # does **not** exist and caused a ``psycopg2.errors.UndefinedColumn`` error.
+    # All references have been corrected to ``p.amount``.
     sql = """
     DROP TABLE IF EXISTS customer_finance_features;
 
@@ -64,7 +65,7 @@ def run() -> None:
 
         /* ---------- money ---------- */
         COALESCE(SUM(i.amount), 0)                     AS total_billed,
-        COALESCE(SUM(p.paid_amount), 0)                     AS total_paid,
+        COALESCE(SUM(p.amount), 0)                     AS total_paid,
 
         /* ---------- risk / governance label ---------- */
         CASE
@@ -82,7 +83,7 @@ def run() -> None:
                     0
                 ) > 15
                 OR
-                (COALESCE(SUM(i.amount), 0) - COALESCE(SUM(p.paid_amount), 0)) > 10000
+                (COALESCE(SUM(i.amount), 0) - COALESCE(SUM(p.amount), 0)) > 10000
             THEN 1
             ELSE 0
         END AS risk_label
