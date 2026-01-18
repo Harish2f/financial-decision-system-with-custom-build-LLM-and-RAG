@@ -1,4 +1,8 @@
 from decision.pipeline import DecisionPipeline
 
-results = DecisionPipeline().run_ml()
-print(results)
+def main():
+    results = DecisionPipeline().run_ml()
+    print("ML decisions completed")
+
+if __name__ == "__main__":
+    main()
