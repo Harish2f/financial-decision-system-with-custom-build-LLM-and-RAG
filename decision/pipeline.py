@@ -4,6 +4,7 @@ from decision.baseline import BaselineRiskModel
 from decision.evaluator import Evaluator
 from decision.ml_adapter import MLAdapter
 from decision.inference_guard import InferenceGuard
+from decision.feature_contract import FEATURES
 
 EXPECTED_FEATURES = [
     "total_invoices",
@@ -34,26 +35,23 @@ class DecisionPipeline:
 
         return self.evaluator.evaluate(y_true, y_pred)
 
+    from decision.feature_contract import FEATURES
+
     def run_ml(self):
        df = self.store.load_features()
        y_true = df["risk_label"]
 
-        # --- STRICT MODEL INPUT DEFINITION ---
-       X = df.drop(columns=["customer_id", "risk_label"])
+       X = df[FEATURES]
 
        guard = InferenceGuard(
-            expected_features=EXPECTED_FEATURES,
-            feature_bounds=FEATURE_BOUNDS,
-        )
-    # HARD GATE on MODEL INPUTS ONLY
+           expected_features=FEATURES,
+           feature_bounds=FEATURE_BOUNDS,
+       )
        X = guard.validate(X)
 
-       reference_df = self.store.load_reference_features()[EXPECTED_FEATURES]
+       reference_df = self.store.load_reference_features()[FEATURES]
+       DriftMonitor(reference_df).check(X)
 
-       monitor = DriftMonitor(reference_df)
-       monitor.check(X)
-
-       ml = MLAdapter()
-       y_pred = ml.predict(X)
-
+       y_pred = MLAdapter().predict(X)
        return self.evaluator.evaluate(y_true, y_pred)
+      
