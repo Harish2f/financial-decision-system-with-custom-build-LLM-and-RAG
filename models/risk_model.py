@@ -8,8 +8,9 @@ class RiskModel:
         self.n_features_in_ = None
 
     def train(self, X, y):
+        self.feature_names_ = list(X.columns)
+
         self.model.fit(X, y)
-        self.n_features_in_ = X.shape[1]
 
     def predict(self, X):
         if self.n_features_in_ is None:

@@ -6,5 +6,5 @@ class MLAdapter:
         self.model = get_model()
 
     def predict(self, df):
-        X = build_ml_features(df)
+        X = X[self.model.feature_names_]
         return self.model.predict(X)
