@@ -1,4 +1,4 @@
-import xgboost as XGBClassifier
+from xgboost import XGBClassifier
 
 class RiskModel:
     def __init__(self):
@@ -12,15 +12,16 @@ class RiskModel:
             eval_metric="logloss",
         )
         self.n_features_in_ = None
+        self.feature_names_ = None
 
     def train(self, X, y):
         self.model.fit(X, y)
 
-        # persist feature contract
+        # === persist training contract ===
         self.n_features_in_ = X.shape[1]
         self.feature_names_ = list(X.columns)
 
     def predict(self, X):
-        # enforce training-time feature order
+        # enforce identical feature order
         X = X[self.feature_names_]
         return self.model.predict(X)
