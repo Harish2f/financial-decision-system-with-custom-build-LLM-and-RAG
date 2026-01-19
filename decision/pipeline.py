@@ -41,7 +41,7 @@ class DecisionPipeline:
        df = self.store.load_features()
        y_true = df["risk_label"]
 
-       X = df[FEATURES]
+       X = df.drop(columns=["risk_label", "customer_id"])
 
        guard = InferenceGuard(
            expected_features=FEATURES,

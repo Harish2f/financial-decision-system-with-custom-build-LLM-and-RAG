@@ -2,16 +2,15 @@ import numpy as np
 
 class InferenceGuard:
     def __init__(self, expected_features, feature_bounds):
-        # KEEP ORDER — DO NOT USE SET
-        self.expected_features = list(expected_features)
-        self.expected_feature_set = set(expected_features)
+        self.expected_features = list(expected_features)  # ORDERED
         self.feature_bounds = feature_bounds
 
     def validate(self, df):
         incoming_features = set(df.columns)
+        expected_set = set(self.expected_features)
 
-        missing = self.expected_feature_set - incoming_features
-        extra = incoming_features - self.expected_feature_set
+        missing = expected_set - incoming_features
+        extra = incoming_features - expected_set
 
         if missing:
             raise RuntimeError(f"Missing features: {sorted(missing)}")
@@ -19,11 +18,9 @@ class InferenceGuard:
         if extra:
             raise RuntimeError(f"Unexpected features: {sorted(extra)}")
 
-        # --- VALUE VALIDATION ---
         for col, (low, high) in self.feature_bounds.items():
             if ((df[col] < low) | (df[col] > high)).any():
                 raise RuntimeError(f"Feature {col} out of bounds")
 
-        # --- RETURN IN TRAINING ORDER ---
+        # RETURN IN TRAINING ORDER
         return df[self.expected_features]
-    
