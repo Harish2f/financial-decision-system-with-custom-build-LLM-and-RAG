@@ -2,7 +2,7 @@
 
 ProductioncGrade Applied AI Platform (AKS + Airflow + CI/CD)
 
-This repository contains a productioncgrade financial risk decision system built using enterprisecstyle Applied AI, governance, and cloud orchestration patterns.
+This repository contains a production grade financial risk decision system built using enterprise style Applied AI, governance, and cloud orchestration patterns using invoice and payment history.
 
 The system is intentionally designed to choose between rule based logic and machine learning based on measurable business impact, not model hype.
 
@@ -37,6 +37,13 @@ Therefore, this system enforces:
 
 ---
 
+## Key Design Decisions
+- Baseline as governance anchor
+- Hard inference guards
+- Feature contract enforcement
+- Drift warnings (non-blocking)
+
+
 ## System Architecture
 
 ```bash
@@ -57,6 +64,10 @@ Monitoring & Metrics
         ↓
 Airflow (AKS)
         ↓
+Inference-time validation
+		↓
+ Drift monitoring
+		↓
 CI/CD (GitHub Actions)
 
 ```
