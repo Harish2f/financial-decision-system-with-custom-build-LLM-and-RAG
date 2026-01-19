@@ -35,26 +35,25 @@ class DecisionPipeline:
         return self.evaluator.evaluate(y_true, y_pred)
 
     def run_ml(self):
-        df = self.store.load_features()
-        y_true = df["risk_label"]
+       df = self.store.load_features()
+       y_true = df["risk_label"]
 
-        X = df.drop(columns=["risk_label"])
+        # --- STRICT MODEL INPUT DEFINITION ---
+       X = df.drop(columns=["customer_id", "risk_label"])
 
-        guard = InferenceGuard(
-         expected_features=EXPECTED_FEATURES,
+       guard = InferenceGuard(
+            expected_features=EXPECTED_FEATURES,
             feature_bounds=FEATURE_BOUNDS,
-    )
+        )
+    # HARD GATE on MODEL INPUTS ONLY
+       X = guard.validate(X)
 
-        # HARD GATE
-        X = guard.validate(X)
-        reference_df = self.store.load_reference_features()
-        reference_df = reference_df[EXPECTED_FEATURES]
+       reference_df = self.store.load_reference_features()[EXPECTED_FEATURES]
 
-    
-        monitor = DriftMonitor(reference_df)
-        monitor.check(X)
+       monitor = DriftMonitor(reference_df)
+       monitor.check(X)
 
-        ml = MLAdapter()
-        y_pred = ml.predict(X)
+       ml = MLAdapter()
+       y_pred = ml.predict(X)
 
-        return self.evaluator.evaluate(y_true, y_pred)
+       return self.evaluator.evaluate(y_true, y_pred)
